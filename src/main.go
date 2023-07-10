@@ -1,10 +1,12 @@
+/*
+CREATED BY DR.ALANORAGE on 2023.07.10
+*/
 package main
 
 import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
-	"github.com/kataras/iris/v12/mvc"
 )
 
 func main() {
@@ -16,9 +18,16 @@ func main() {
 		ctx.HTML("Hello, World!")
 	})
 
-	api := app.Party("/api")
+	api_prt := app.Party("/api")
 
-	mvc.Configure(api.Party("/user"), userMvc)
+	/**/
+	user_prt := api_prt.Party("/user")
 
-	app.Run(iris.Addr(":8080"))
+	user_loginAPI := user_prt.Party("/login")
+	{
+
+	}
+	/**/
+
+	app.Run(iris.Addr(":8080"), iris.WithConfiguration(iris.TOML("./config_iris.toml")))
 }
