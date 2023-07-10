@@ -15,8 +15,13 @@
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
 #include "oatpp/core/macro/component.hpp"
 #include "dto.hpp"
+#include "oatpp/orm/SchemaMigration.hpp"
+#include "oatpp/orm/DbClient.hpp"
+#include "oatpp/core/macro/codegen.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
+#include "DbClient.cpp"
 #include OATPP_CODEGEN_BEGIN(ApiController)
-oatpp::Object<user_dto> temp,temp2;
+oatpp::Object<user_dto> temp,temp2,temp3,temp4;
 oatpp::Object<message_dto> me;
 oatpp::Object<message_error_dto> mee;
 class user_controller : public oatpp::web::server::api::ApiController {
@@ -54,10 +59,6 @@ public:
         }
         Action returnResponse(const oatpp::Object<user_dto>& body){
             OATPP_ASSERT_HTTP(body, Status::CODE_404, "error");
-            /*
-             * check user
-             * code......
-             * */
             return _return(controller->createDtoResponse(Status::CODE_100,me));
         }
     };
@@ -80,7 +81,7 @@ public:
             if(b1&&b2&&b3&&b4&&b5){
                 return _return(controller->createDtoResponse(Status::CODE_100,me));
             }
-            return _return(controller->createDtoResponse(Status::CODE_100,mee));
+            return _return(controller->createDtoResponse(Status::CODE_400,mee));
         }
     };
     ENDPOINT_ASYNC("POST", "/sendim",sim) {
@@ -108,6 +109,38 @@ public:
         Action returnResponse(const oatpp::Object<message_dto>& body){
             OATPP_ASSERT_HTTP(body, Status::CODE_404, "error");
             me = body;
+        }
+    };
+    ENDPOINT_ASYNC("POST", "/add1",af1) {
+    ENDPOINT_ASYNC_INIT(af1)
+        Action act() override {
+            return request->readBodyToDtoAsync<oatpp::Object<user_dto>>(
+                    controller->getDefaultObjectMapper()
+            ).callbackTo(&af1::use);
+        }
+        Action use(const oatpp::Object<user_dto>& body){
+            OATPP_ASSERT_HTTP(body, Status::CODE_404, "error");
+             temp3 = body;
+        }
+    };
+    ENDPOINT_ASYNC("POST", "/add2",af2) {
+    ENDPOINT_ASYNC_INIT(af2)
+        Action act() override {
+            return request->readBodyToDtoAsync<oatpp::Object<user_dto>>(
+                    controller->getDefaultObjectMapper()
+            ).callbackTo(&af2::returnResponse);
+        }
+        Action returnResponse(const oatpp::Object<user_dto>& body){
+            OATPP_ASSERT_HTTP(body, Status::CODE_404, "error");
+            OATPP_ASSERT_HTTP(temp3, Status::CODE_404, "error");
+            temp4 = body;
+            /*
+             *
+             * add friend
+             * code ......
+             *
+             * */
+            return _return(controller->createDtoResponse(Status::CODE_100,me));
         }
     };
 };

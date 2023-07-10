@@ -16,6 +16,7 @@
 #include "oatpp/network/virtual_/Interface.hpp"
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
 #include "oatpp/core/macro/component.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
 #include OATPP_CODEGEN_BEGIN(DTO)
 using namespace oatpp::parser::json::mapping;
 class user_dto : public oatpp::DTO {

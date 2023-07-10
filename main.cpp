@@ -6,6 +6,7 @@
 #include "oatpp/core/macro/component.hpp"
 #include "controller.hpp"
 #include "component.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
 #include "controller.hpp"
 #include "component.hpp"
 #include "oatpp/network/Server.hpp"

@@ -14,6 +14,10 @@
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/core/macro/component.hpp"
+#include "oatpp/orm/SchemaMigration.hpp"
+#include "oatpp/orm/DbClient.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
+#include "oatpp/core/macro/codegen.hpp"
 class Component {
 public:
     OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, serverConnectionProvider)([] {
