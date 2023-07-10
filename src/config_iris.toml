@@ -1,0 +1,11 @@
+DisablePathCorrection = false
+EnablePathEscape = false
+FireMethodNotAllowed = true
+DisableBodyConsumptionOnUnmarshal = false
+DisableStartupLog = true
+DisableInterruptHandler = true
+DisableAutoFireStatusCode = true
+Charset = "UTF-8"
+
+[Other]
+    MyServerName = "HowTellYou"
