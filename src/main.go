@@ -33,7 +33,7 @@ func main() {
 
 	api_prt := app.Party("/api")
 
-	/* - User prt - */
+	/* - User part - */
 	user_prtAPI := api_prt.Party("/user")
 	{
 		user_prtAPI.Use(iris.Compression)
