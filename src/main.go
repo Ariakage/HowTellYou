@@ -10,19 +10,41 @@ import (
 	"os"
 	"strconv"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
+	"github.com/pelletier/go-toml"
 )
 
-var port = flag.Int("p", 8080, "Server Listen Port")
-var configFilePath = flag.String("cfgp", "./config_iris.toml", "Config File Path")
+var configFilePath = flag.String("cfgp", "./config.toml", "Config File Path")
 
 func main() {
-
 	flag.Parse()
-	if *port > 65536 || *port < 0 {
+
+	config, _ := toml.LoadFile(*configFilePath)
+
+	sv_cfgp := config.Get("server.config_path").(string)
+	sv_port := int(config.Get("server.port").(int64))
+
+	db_ip := config.Get("database.ip").(string)
+	db_port := int(config.Get("database.port").(int64))
+	db_user := config.Get("database.user").(string)
+	db_pwd := config.Get("database.password").(string)
+	db_dbname := config.Get("database.database_name").(string)
+	//db_link := db_user + ":" + db_pwd + "@tcp(" + db_ip + ":" + strconv.Itoa(db_port) + ")/" + db_dbname
+	//fmt.Println(db_link)
+	db_cfg := mysql.Config{
+		User:                 db_user,
+		Passwd:               db_pwd,
+		Net:                  "tcp",
+		Addr:                 db_ip + ":" + strconv.Itoa(db_port),
+		DBName:               db_dbname,
+		AllowNativePasswords: true,
+	}
+	_ = db_cfg
+
+	if sv_port > 65536 || sv_port < 0 {
 		fmt.Println("HTY Startup error - port parameter >65536 or <0")
 		os.Exit(0)
 	}
@@ -31,6 +53,8 @@ func main() {
 	app.Use(recover.New())
 	app.Use(logger.New())
 
+	//var db *sql.DB = openDataBase(db_link) //"root:qwerty123456@tcp(192.168.21.131:3306)/hty"
+	//var db *sql.DB = openDataBase(db_cfg.FormatDSN())
 	var db *sql.DB = openDataBase("root:qwerty123456@tcp(192.168.21.131:3306)/hty")
 
 	var exec_res sql.Result
@@ -62,7 +86,7 @@ func main() {
 		//Login
 		{
 			user_prtAPI.Get("/login", func(ctx iris.Context) {
-				ctx.Text("login - get")
+				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/login", func(ctx iris.Context) {
 				ctx.Text("login - post")
@@ -71,7 +95,7 @@ func main() {
 		//Register
 		{
 			user_prtAPI.Get("/register", func(ctx iris.Context) {
-				ctx.Text("register - get")
+				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/register", func(ctx iris.Context) {
 				ctx.Text("register - post")
@@ -80,7 +104,7 @@ func main() {
 		//Logout
 		{
 			user_prtAPI.Get("/logout", func(ctx iris.Context) {
-				ctx.Text("logout - get")
+				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/logout", func(ctx iris.Context) {
 				ctx.Text("logout - post")
@@ -89,7 +113,7 @@ func main() {
 		//Find Account
 		{
 			user_prtAPI.Get("/find_account", func(ctx iris.Context) {
-				ctx.Text("find-account - get")
+				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/find_account", func(ctx iris.Context) {
 				ctx.Text("find-account - post")
@@ -98,5 +122,5 @@ func main() {
 	}
 	/* --- */
 
-	app.Run(iris.Addr(":"+strconv.Itoa(*port)), iris.WithConfiguration(iris.TOML(*configFilePath)))
+	app.Run(iris.Addr(":"+strconv.Itoa(sv_port)), iris.WithConfiguration(iris.TOML(sv_cfgp)))
 }

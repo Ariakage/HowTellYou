@@ -1,0 +1,11 @@
+[global]
+    name = "HowTellYou"
+[server]
+    port = 8080
+    config_path = "./config_iris.toml"
+[database]
+    ip = "192.168.21.131"
+    port = 3306
+    user = "root"
+    password = "qwerty123456"
+    database_name = "hty"
