@@ -42,3 +42,12 @@ IF
 		`content` TEXT NOT NULL,
 	`send_time` DATETIME NOT NULL 
 	);
+
+-- User
+
+-- Add User
+INSERT INTO hty_user(`favimg` ,`name`, `email`, `pwd`) VALUES ('', 'test_user1', 'abcd@test.com', '114514')
+-- Select User pwd
+SELECT `pwd` FROM hty_user WHERE `id` = 11 or `email` = 'abcd@test.com'
+
+-- End User

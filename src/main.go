@@ -76,7 +76,7 @@ func main() {
 	// Create Tables to mysql db
 	createTables(db)
 
-	closeDB(db)
+	//closeDB(db)
 
 	app.Get("/", func(ctx iris.Context) {
 		ctx.HTML(`
@@ -113,9 +113,21 @@ func main() {
 				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/login", func(ctx iris.Context) {
-				respone_content := GetRequestParams(ctx)
-				fmt.Println(respone_content)
-				ctx.Text("login - post")
+				respone_content := *(GetRequestParams(ctx).(*map[string]interface{}))
+				id := respone_content["id"]
+				pwd := respone_content["pwd"]
+				if id == nil || pwd == nil {
+					ctx.Text("Error")
+				}
+				row := db.QueryRow("SELECT `pwd` FROM hty_user WHERE `id` = ?", int(id.(float64)))
+				var pwd_dbd string
+				err := row.Scan(&pwd_dbd)
+				if err != nil {
+					fmt.Println(err)
+				}
+				if pwd_dbd == GetSHA256HashCode([]byte(pwd.(string))) {
+					ctx.Text("Success")
+				}
 			})
 		}
 		//Register

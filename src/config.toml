@@ -1,7 +1,7 @@
 [global]
     name = "HowTellYou"
 [server]
-    port = 8080
+    port = 8888
     config_path = "./config_iris.toml"
 [database]
     ip = "192.168.21.131"

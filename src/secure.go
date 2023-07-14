@@ -6,7 +6,9 @@ import (
 	"crypto/cipher"
 	"crypto/des"
 	crand "crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"math/big"
 	"math/rand"
 	"strconv"
@@ -129,18 +131,18 @@ func ZerosUnPadding(data []byte) []byte {
 /* Symmetric encryption part - end */
 
 /* random part - start */
-func generateRand(maxn int) int {
+func GenerateRand(maxn int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(maxn)
 }
 
-func generateRealRand(maxn int) int {
+func GenerateRealRand(maxn int) int {
 	res, _ := crand.Int(crand.Reader, big.NewInt(int64(maxn)))
 	r, _ := strconv.Atoi(res.String())
 	return r
 }
 
-func generateRandomString(n int, chars string) string {
+func GenerateRandomString(n int, chars string) string {
 	/*t := strings.Builder{}
 	t.Grow(n)
 	for i := 0; i < n; i++ {
@@ -149,9 +151,32 @@ func generateRandomString(n int, chars string) string {
 	return t.String()*/
 	var t string
 	for i := 0; i < n; i++ {
-		t = t + string(chars[generateRealRand(len(chars))])
+		t = t + string(chars[GenerateRealRand(len(chars))])
 	}
 	return t
 }
 
 /* random part - end */
+
+/* sha256 part - start */
+//SHA256生成哈希值
+func GetSHA256HashCode(message []byte) string {
+	//方法一：
+	//创建一个基于SHA256算法的hash.Hash接口的对象
+	hash := sha256.New()
+	//输入数据
+	hash.Write(message)
+	//计算哈希值
+	bytes := hash.Sum(nil)
+	//将字符串编码为16进制格式,返回字符串
+	hashCode := hex.EncodeToString(bytes)
+	//返回哈希值
+	return hashCode
+
+	//方法二：
+	//bytes2:=sha256.Sum256(message)//计算哈希值，返回一个长度为32的数组
+	//hashcode2:=hex.EncodeToString(bytes2[:])//将数组转换成切片，转换成16进制，返回字符串
+	//return hashcode2
+}
+
+/* sha256 part - end */
