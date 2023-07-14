@@ -37,6 +37,7 @@ func main() {
 CREATE TABLE IF NOT EXISTS hty_user
 (
 id int primary key identity,
+favimg text default '',
 name varchar(16) not null,
 email varchar(50) not null,
 pwd varchar(20) not null,
@@ -53,6 +54,21 @@ user_group varchar(10) not null,
 friend_group varchar(10) not null
 )
 		`)
+	// Create Group Table (https://blog.csdn.net/php_xml/article/details/108690219)
+	execSQL(db, `
+CREATE TABLE IF NOT EXISTS hty_group
+(
+id int primary key identity,
+favimg text default '',
+name varchar(16) not null,
+owner_id int not null,
+admins longtext not null default '',
+members longtext not null,
+type int not null,
+remark varchar(200) not null default '',
+create_time datetime DEFAULT CURRENT_TIMESTAMP not null
+)
+	`)
 	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
 	execSQL(db, `
 CREATE TABLE IF NOT EXISTS hty_message
