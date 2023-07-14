@@ -32,8 +32,6 @@ func main() {
 	db_user := config.Get("database.user").(string)
 	db_pwd := config.Get("database.password").(string)
 	db_dbname := config.Get("database.database_name").(string)
-	//db_link := db_user + ":" + db_pwd + "@tcp(" + db_ip + ":" + strconv.Itoa(db_port) + ")/" + db_dbname
-	//fmt.Println(db_link)
 	db_cfg := mysql.Config{
 		User:                 db_user,
 		Passwd:               db_pwd,
@@ -42,7 +40,6 @@ func main() {
 		DBName:               db_dbname,
 		AllowNativePasswords: true,
 	}
-	_ = db_cfg
 
 	if sv_port > 65536 || sv_port < 0 {
 		fmt.Println("HTY Startup error - port parameter >65536 or <0")
@@ -54,8 +51,8 @@ func main() {
 	app.Use(logger.New())
 
 	//var db *sql.DB = openDataBase(db_link) //"root:qwerty123456@tcp(192.168.21.131:3306)/hty"
-	//var db *sql.DB = openDataBase(db_cfg.FormatDSN())
-	var db *sql.DB = openDataBase("root:qwerty123456@tcp(192.168.21.131:3306)/hty")
+	var db *sql.DB = openDataBase(db_cfg.FormatDSN())
+	//var db *sql.DB = openDataBase("root:qwerty123456@tcp(192.168.21.131:3306)/hty")
 
 	var exec_res sql.Result
 	//Create User Table
