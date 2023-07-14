@@ -36,6 +36,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mailgun/raymond/v2 v2.0.48 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/mediocregopher/radix/v3 v3.8.1 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.23 // indirect
 	github.com/nats-io/nats.go v1.23.0 // indirect

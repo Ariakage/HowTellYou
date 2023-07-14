@@ -1,3 +1,6 @@
+/*
+CREATED BY DR.ALANORAGE on 2023.07.11
+*/
 package main
 
 import "time"

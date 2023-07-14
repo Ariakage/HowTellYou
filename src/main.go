@@ -4,6 +4,7 @@ CREATED BY DR.ALANORAGE on 2023.07.10
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"os"
@@ -12,11 +13,14 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var port = flag.Int("p", 8080, "Server Listen Port")
+var configFilePath = flag.String("cfgp", "./config_iris.toml", "Config File Path")
 
 func main() {
+
 	flag.Parse()
 	if *port > 65536 || *port < 0 {
 		fmt.Println("HTY Startup error - port parameter >65536 or <0")
@@ -26,6 +30,41 @@ func main() {
 	app := iris.New()
 	app.Use(recover.New())
 	app.Use(logger.New())
+
+	var db *sql.DB = openDataBase("./db.sqlite")
+	//Create User Table
+	execSQL(db, `
+CREATE TABLE IF NOT EXISTS hty_user
+(
+id int primary key identity,
+name varchar(16) not null,
+email varchar(50) not null,
+pwd varchar(20) not null,
+create_time datetime DEFAULT CURRENT_TIMESTAMP not null
+)
+	`)
+	// Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
+	execSQL(db, `
+CREATE TABLE IF NOT EXISTS hty_friend
+(
+user_id int not null,
+friend_id int not null,
+user_group varchar(10) not null,
+friend_group varchar(10) not null
+)
+		`)
+	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
+	execSQL(db, `
+CREATE TABLE IF NOT EXISTS hty_message
+(
+id int primary key identity,
+send_user_id int not null,
+receive_user_id int not null,
+content text not null,
+send_time datetime not null
+)
+	`)
+	closeDB(db)
 
 	app.Get("/", func(ctx iris.Context) {
 		ctx.HTML("Hello, World!")
@@ -77,5 +116,5 @@ func main() {
 	}
 	/* --- */
 
-	app.Run(iris.Addr(":"+strconv.Itoa(*port)), iris.WithConfiguration(iris.TOML("./config_iris.toml")))
+	app.Run(iris.Addr(":"+strconv.Itoa(*port)), iris.WithConfiguration(iris.TOML(*configFilePath)))
 }
