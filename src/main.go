@@ -73,14 +73,8 @@ func main() {
 	exec_res = execSQL(db, "CREATE TABLE IF NOT EXISTS hty_message ( `id` INT PRIMARY KEY AUTO_INCREMENT, `send_user_id` INT NOT NULL, `receive_user_id` INT NOT NULL, `content` TEXT NOT NULL, `send_time` DATETIME NOT NULL );")
 	fmt.Println(exec_res.RowsAffected())*/
 
-	//Create User Table
-	db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
-	// Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
-	db.Exec("CREATE TABLE IF NOT EXISTS hty_friend ( `user_id` INT NOT NULL, `friend_id` INT NOT NULL, `user_group` VARCHAR ( 10 ) NOT NULL, `friend_group` VARCHAR ( 10 ) NOT NULL );")
-	// Create Group Table (https://blog.csdn.net/php_xml/article/details/108690219)
-	db.Exec("CREATE TABLE IF NOT EXISTS hty_group ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT DEFAULT '', `name` VARCHAR ( 16 ) NOT NULL, `owner_id` INT NOT NULL, `admins` LONGTEXT NOT NULL DEFAULT '', `members` LONGTEXT NOT NULL, `type` INT NOT NULL, `remark` VARCHAR ( 200 ) NOT NULL DEFAULT '', `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL );")
-	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
-	db.Exec("CREATE TABLE IF NOT EXISTS hty_message ( `id` INT PRIMARY KEY AUTO_INCREMENT, `send_user_id` INT NOT NULL, `receive_user_id` INT NOT NULL, `content` TEXT NOT NULL, `send_time` DATETIME NOT NULL );")
+	// Create Tables to mysql db
+	createTables(db)
 
 	closeDB(db)
 
@@ -156,6 +150,33 @@ func main() {
 
 	app.Run(iris.Addr(":"+strconv.Itoa(sv_port)), iris.WithConfiguration(iris.TOML(sv_cfgp)))
 }
+
+/* Private */
+func createTables(db *sql.DB) {
+	//Create User Table
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS hty_friend ( `user_id` INT NOT NULL, `friend_id` INT NOT NULL, `user_group` VARCHAR ( 10 ) NOT NULL, `friend_group` VARCHAR ( 10 ) NOT NULL );")
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Create Group Table (https://blog.csdn.net/php_xml/article/details/108690219)
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS hty_group ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT DEFAULT '', `name` VARCHAR ( 16 ) NOT NULL, `owner_id` INT NOT NULL, `admins` LONGTEXT NOT NULL DEFAULT '', `members` LONGTEXT NOT NULL, `type` INT NOT NULL, `remark` VARCHAR ( 200 ) NOT NULL DEFAULT '', `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL );")
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS hty_message ( `id` INT PRIMARY KEY AUTO_INCREMENT, `send_user_id` INT NOT NULL, `receive_user_id` INT NOT NULL, `content` TEXT NOT NULL, `send_time` DATETIME NOT NULL );")
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+/* --- */
 
 func GetRequestParams(ctx iris.Context) interface{} {
 	var params map[string]interface{}
