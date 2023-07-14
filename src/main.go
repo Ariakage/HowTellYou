@@ -70,7 +70,25 @@ func main() {
 	closeDB(db)
 
 	app.Get("/", func(ctx iris.Context) {
-		ctx.HTML("Hello, World!")
+		ctx.HTML(`
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>How Tell You Back</title>
+		<style>
+			*{
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>This is How Tell You Project Back Side</h1>
+		<h1>Please do not directly access this site</h1>
+		<h1>Thanks a lot!</h1>
+	</body>
+</html>
+`)
 	})
 
 	api_prt := app.Party("/api")
