@@ -10,10 +10,10 @@ import (
 	"os"
 	"strconv"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var port = flag.Int("p", 8080, "Server Listen Port")
@@ -33,53 +33,13 @@ func main() {
 
 	var db *sql.DB = openDataBase("./db.sqlite")
 	//Create User Table
-	execSQL(db, `
-CREATE TABLE IF NOT EXISTS hty_user
-(
-id int primary key identity,
-favimg text default '',
-name varchar(16) not null,
-email varchar(50) not null,
-pwd varchar(20) not null,
-create_time datetime DEFAULT CURRENT_TIMESTAMP not null
-)
-	`)
+	execSQL(db, "CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(20) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
 	// Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
-	execSQL(db, `
-CREATE TABLE IF NOT EXISTS hty_friend
-(
-user_id int not null,
-friend_id int not null,
-user_group varchar(10) not null,
-friend_group varchar(10) not null
-)
-		`)
+	execSQL(db, "CREATE TABLE IF NOT EXISTS hty_friend ( `user_id` INT NOT NULL, `friend_id` INT NOT NULL, `user_group` VARCHAR ( 10 ) NOT NULL, `friend_group` VARCHAR ( 10 ) NOT NULL );")
 	// Create Group Table (https://blog.csdn.net/php_xml/article/details/108690219)
-	execSQL(db, `
-CREATE TABLE IF NOT EXISTS hty_group
-(
-id int primary key identity,
-favimg text default '',
-name varchar(16) not null,
-owner_id int not null,
-admins longtext not null default '',
-members longtext not null,
-type int not null,
-remark varchar(200) not null default '',
-create_time datetime DEFAULT CURRENT_TIMESTAMP not null
-)
-	`)
+	execSQL(db, "CREATE TABLE IF NOT EXISTS hty_group ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT DEFAULT '', `name` VARCHAR ( 16 ) NOT NULL, `owner_id` INT NOT NULL, `admins` LONGTEXT NOT NULL DEFAULT '', `members` LONGTEXT NOT NULL, `type` INT NOT NULL, `remark` VARCHAR ( 200 ) NOT NULL DEFAULT '', `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL );")
 	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
-	execSQL(db, `
-CREATE TABLE IF NOT EXISTS hty_message
-(
-id int primary key identity,
-send_user_id int not null,
-receive_user_id int not null,
-content text not null,
-send_time datetime not null
-)
-	`)
+	execSQL(db, "CREATE TABLE IF NOT EXISTS hty_message ( `id` INT PRIMARY KEY AUTO_INCREMENT, `send_user_id` INT NOT NULL, `receive_user_id` INT NOT NULL, `content` TEXT NOT NULL, `send_time` DATETIME NOT NULL );")
 	closeDB(db)
 
 	app.Get("/", func(ctx iris.Context) {
