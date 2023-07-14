@@ -59,8 +59,8 @@ func main() {
 	var db *sql.DB = openDataBase(db_cfg.FormatDSN())
 	//var db *sql.DB = openDataBase("root:qwerty123456@tcp(192.168.21.131:3306)/hty")
 
-	var exec_res sql.Result
-	//Create User Table
+	/*var exec_res sql.Result
+	// Create User Table
 	exec_res = execSQL(db, "CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
 	fmt.Println(exec_res.RowsAffected())
 	// Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
@@ -71,7 +71,17 @@ func main() {
 	fmt.Println(exec_res.RowsAffected())
 	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
 	exec_res = execSQL(db, "CREATE TABLE IF NOT EXISTS hty_message ( `id` INT PRIMARY KEY AUTO_INCREMENT, `send_user_id` INT NOT NULL, `receive_user_id` INT NOT NULL, `content` TEXT NOT NULL, `send_time` DATETIME NOT NULL );")
-	fmt.Println(exec_res.RowsAffected())
+	fmt.Println(exec_res.RowsAffected())*/
+
+	//Create User Table
+	db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
+	// Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
+	db.Exec("CREATE TABLE IF NOT EXISTS hty_friend ( `user_id` INT NOT NULL, `friend_id` INT NOT NULL, `user_group` VARCHAR ( 10 ) NOT NULL, `friend_group` VARCHAR ( 10 ) NOT NULL );")
+	// Create Group Table (https://blog.csdn.net/php_xml/article/details/108690219)
+	db.Exec("CREATE TABLE IF NOT EXISTS hty_group ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT DEFAULT '', `name` VARCHAR ( 16 ) NOT NULL, `owner_id` INT NOT NULL, `admins` LONGTEXT NOT NULL DEFAULT '', `members` LONGTEXT NOT NULL, `type` INT NOT NULL, `remark` VARCHAR ( 200 ) NOT NULL DEFAULT '', `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL );")
+	// Create Message Table (https://blog.csdn.net/qq_42249896/article/details/104033697)
+	db.Exec("CREATE TABLE IF NOT EXISTS hty_message ( `id` INT PRIMARY KEY AUTO_INCREMENT, `send_user_id` INT NOT NULL, `receive_user_id` INT NOT NULL, `content` TEXT NOT NULL, `send_time` DATETIME NOT NULL );")
+
 	closeDB(db)
 
 	app.Get("/", func(ctx iris.Context) {
@@ -109,6 +119,8 @@ func main() {
 				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/login", func(ctx iris.Context) {
+				respone_content := GetRequestParams(ctx)
+				fmt.Println(respone_content)
 				ctx.Text("login - post")
 			})
 		}
@@ -143,4 +155,10 @@ func main() {
 	/* --- */
 
 	app.Run(iris.Addr(":"+strconv.Itoa(sv_port)), iris.WithConfiguration(iris.TOML(sv_cfgp)))
+}
+
+func GetRequestParams(ctx iris.Context) interface{} {
+	var params map[string]interface{}
+	_ = ctx.ReadJSON(&params)
+	return &params
 }

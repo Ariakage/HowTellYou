@@ -15,14 +15,6 @@ func openDataBase(fp string) *sql.DB {
 	return db
 }
 
-func execSQL(db *sql.DB, cmd string) sql.Result {
-	res, err := db.Exec(cmd)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return res
-}
-
 func closeDB(db *sql.DB) {
 	db.Close()
 }
