@@ -6,7 +6,7 @@ IF
 		`favimg` TEXT NOT NULL,
 		`name` VARCHAR ( 16 ) NOT NULL,
 		`email` VARCHAR ( 50 ) NOT NULL,
-		`pwd` VARCHAR ( 20 ) NOT NULL,
+		`pwd` VARCHAR ( 512 ) NOT NULL,
 	`create_time` DATETIME DEFAULT CURRENT_TIMESTAMP 
 	);
 -- Create Friend Table (https://blog.csdn.net/wo541075754/article/details/82733278)
