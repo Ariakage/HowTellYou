@@ -46,6 +46,11 @@ func main() {
 		os.Exit(0)
 	}
 
+	/*Debug Code There*/
+	//fmt.Println(generateRandomString(10, config.Get("secure.allowed_chars").(string)))
+	//fmt.Println(generateLoginToken(config.Get("secure.allowed_chars").(string), int(config.Get("secure.salt_length").(int64)), config.Get("secure.key").(string), 114514, time.Now()))
+	/* --- */
+
 	app := iris.New()
 	app.Use(recover.New())
 	app.Use(logger.New())

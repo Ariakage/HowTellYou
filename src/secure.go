@@ -5,9 +5,15 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/des"
+	crand "crypto/rand"
 	"encoding/base64"
+	"math/big"
+	"math/rand"
+	"strconv"
+	"time"
 )
 
+/* Symmetric encryption part - start */
 // 对称加密（Symmetric Cryptography）
 func SCEncrypt(originalBytes, key []byte, scType string) ([]byte, error) {
 	// 1、实例化密码器block（参数为密钥）
@@ -119,3 +125,33 @@ func ZerosUnPadding(data []byte) []byte {
 		return r == 0
 	})
 }
+
+/* Symmetric encryption part - end */
+
+/* random part - start */
+func generateRand(maxn int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(maxn)
+}
+
+func generateRealRand(maxn int) int {
+	res, _ := crand.Int(crand.Reader, big.NewInt(int64(maxn)))
+	r, _ := strconv.Atoi(res.String())
+	return r
+}
+
+func generateRandomString(n int, chars string) string {
+	/*t := strings.Builder{}
+	t.Grow(n)
+	for i := 0; i < n; i++ {
+		t.WriteByte(chars[generateRand(len(chars))])
+	}
+	return t.String()*/
+	var t string
+	for i := 0; i < n; i++ {
+		t = t + string(chars[generateRealRand(len(chars))])
+	}
+	return t
+}
+
+/* random part - end */
