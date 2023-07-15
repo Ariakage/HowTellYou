@@ -21,7 +21,7 @@ import (
 )
 
 var configFilePath = flag.String("cfgp", "./config.toml", "Config File Path")
-var globalTokenMap map[string]*list.List = make(map[string]*list.List)
+var globalTokenMap map[int]*list.List = make(map[int]*list.List)
 
 func main() {
 	flag.Parse()
@@ -159,22 +159,22 @@ func main() {
 					if err != nil {
 						fmt.Println(err)
 					}
-					if _, ok := globalTokenMap[name.(string)]; ok {
+					if _, ok := globalTokenMap[id_dbd]; ok {
 						//globalTokenMap[int(id.(float64))][len(globalTokenMap[int(id.(float64))])] = tk
 						var mp map[string]string = make(map[string]string)
 						mp["token"] = tk
 						mp["salt"] = slt
-						globalTokenMap[name.(string)].PushBack(mp)
+						globalTokenMap[id_dbd].PushBack(mp)
 
 					} else {
 						//var sarr []string = make([]string, 1)
 						//sarr[0] = tk
 						//globalTokenMap[int(id.(float64))] = sarr
-						globalTokenMap[name.(string)] = list.New()
+						globalTokenMap[id_dbd] = list.New()
 						var mp map[string]string = make(map[string]string)
 						mp["token"] = tk
 						mp["salt"] = slt
-						globalTokenMap[name.(string)].PushBack(mp)
+						globalTokenMap[id_dbd].PushBack(mp)
 					}
 					//fmt.Println(globalTokenMap[int(id.(float64))].Back().Value.(map[string]string))
 					ctx.Text(string(m_b))
@@ -240,7 +240,7 @@ func main() {
 				if name == nil || tk == nil {
 					var d map[string]interface{} = make(map[string]interface{})
 					d["status"] = "failed"
-					d["reason"] = "ID or Token is null"
+					d["reason"] = "Name, Id or Token is null"
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
@@ -249,10 +249,16 @@ func main() {
 					ctx.Text(string(m_b))
 					return
 				}
-				if _, ok := globalTokenMap[name.(string)]; ok {
-					for e := globalTokenMap[name.(string)].Front(); e != nil; e = e.Next() {
+				row := db.QueryRow("SELECT `id` FROM hty_user WHERE `id` = ? OR `name` = ?", name.(string), name.(string))
+				var id_dbd int
+				err := row.Scan(&id_dbd)
+				if err != nil {
+					fmt.Println(err)
+				}
+				if _, ok := globalTokenMap[id_dbd]; ok {
+					for e := globalTokenMap[id_dbd].Front(); e != nil; e = e.Next() {
 						if e.Value.(map[string]string)["token"] == tk {
-							globalTokenMap[name.(string)].Remove(e)
+							globalTokenMap[id_dbd].Remove(e)
 							var d map[string]interface{} = make(map[string]interface{})
 							d["status"] = "success"
 							var m *map[string]interface{} = makeResponse(200, d)
@@ -277,7 +283,7 @@ func main() {
 				} else {
 					var d map[string]interface{} = make(map[string]interface{})
 					d["status"] = "failed"
-					d["reason"] = "id is invalid"
+					d["reason"] = "id or name is invalid"
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
