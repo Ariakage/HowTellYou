@@ -426,7 +426,7 @@ func main() {
 							t1, _ := time.Parse(strings.Split(strings.Split(string(r), "@")[1], "$")[0], strings.Split(strings.Split(string(r), "@")[1], "$")[0])
 							t2 := time.Now()
 							rt := t1.Sub(t2)
-							if rt.Minutes() <= 10 {
+							if rt.Minutes() <= float64(se_vc_tom) {
 								uid := strings.Split(string(r), "@")[0]
 								pwds := GetSHA256HashCode([]byte(pwd.(string)))
 								_, err = db.Exec("UPDATE hty_user SET `pwd`=? WHERE `id` = ?", pwds, uid)
