@@ -4,11 +4,14 @@ CREATED BY DR.ALANORAGE on 2023.07.10
 package main
 
 import (
+	"container/list"
 	"database/sql"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
@@ -18,6 +21,7 @@ import (
 )
 
 var configFilePath = flag.String("cfgp", "./config.toml", "Config File Path")
+var globalTokenMap map[int]*list.List = make(map[int]*list.List)
 
 func main() {
 	flag.Parse()
@@ -40,6 +44,10 @@ func main() {
 		DBName:               db_dbname,
 		AllowNativePasswords: true,
 	}
+
+	se_chars := config.Get("secure.allowed_chars").(string)
+	se_saltlength := int(config.Get("secure.salt_length").(int64))
+	se_key := config.Get("secure.key").(string)
 
 	if sv_port > 65536 || sv_port < 0 {
 		fmt.Println("HTY Startup error - port parameter >65536 or <0")
@@ -117,7 +125,16 @@ func main() {
 				id := respone_content["id"]
 				pwd := respone_content["pwd"]
 				if id == nil || pwd == nil {
-					ctx.Text("Error")
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "ID or PWD is null"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+					return
 				}
 				row := db.QueryRow("SELECT `pwd` FROM hty_user WHERE `id` = ?", int(id.(float64)))
 				var pwd_dbd string
@@ -126,7 +143,45 @@ func main() {
 					fmt.Println(err)
 				}
 				if pwd_dbd == GetSHA256HashCode([]byte(pwd.(string))) {
-					ctx.Text("Success")
+					tk, slt := GenerateLoginToken(se_chars, se_saltlength, se_key, int(id.(float64)), time.Now())
+					_ = slt
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "success"
+					d["token"] = tk
+					var m *map[string]interface{} = makeResponse(200, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if _, ok := globalTokenMap[int(id.(float64))]; ok {
+						//globalTokenMap[int(id.(float64))][len(globalTokenMap[int(id.(float64))])] = tk
+						var mp map[string]string = make(map[string]string)
+						mp["token"] = tk
+						mp["salt"] = slt
+						globalTokenMap[int(id.(float64))].PushBack(mp)
+
+					} else {
+						//var sarr []string = make([]string, 1)
+						//sarr[0] = tk
+						//globalTokenMap[int(id.(float64))] = sarr
+						globalTokenMap[int(id.(float64))] = list.New()
+						var mp map[string]string = make(map[string]string)
+						mp["token"] = tk
+						mp["salt"] = slt
+						globalTokenMap[int(id.(float64))].PushBack(mp)
+					}
+					//fmt.Println(globalTokenMap[int(id.(float64))].Back().Value.(map[string]string))
+					ctx.Text(string(m_b))
+				} else {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "ID or PWD err"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
 				}
 			})
 		}
@@ -194,4 +249,11 @@ func GetRequestParams(ctx iris.Context) interface{} {
 	var params map[string]interface{}
 	_ = ctx.ReadJSON(&params)
 	return &params
+}
+
+func makeResponse(status_code int, data interface{}) *map[string]interface{} {
+	var m map[string]interface{} = make(map[string]interface{})
+	m["code"] = status_code
+	m["result"] = data
+	return &m
 }

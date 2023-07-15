@@ -13,3 +13,6 @@
     key = "W*qw#yL5AChsiBiN" # must be 16, 24, 32 length
     allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#$%^&*()-_=+[]{}\\|?><.,/1234567890"
     salt_length = 64
+
+#Please do not make any arbitrary changes to the following content
+[advanced]
