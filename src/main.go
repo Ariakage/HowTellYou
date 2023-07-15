@@ -229,7 +229,7 @@ func main() {
 					fmt.Println(err)
 				}
 				if ct_dbd == 0 {
-					_, err := db.Exec("INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `email`, `pwd`) VALUES (?, ?, ?, ?, ?)", "", name.(string), name.(string), email.(string), GetSHA256HashCode([]byte(pwd.(string))))
+					_, err := db.Exec("INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `gender`, `description`, `email`, `pwd`) VALUES (?, ?, ?, ?, ?)", "", name.(string), name.(string), -1, "", email.(string), GetSHA256HashCode([]byte(pwd.(string))))
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -463,6 +463,96 @@ func main() {
 				}
 			})
 		}
+		//Modify User Info
+		{
+			user_prtAPI.Get("/modify", func(ctx iris.Context) {
+				ctx.Text("Get request is not supported")
+			})
+			user_prtAPI.Post("/modify", func(ctx iris.Context) {
+				respone_content := *(GetRequestParams(ctx).(*map[string]interface{}))
+				switch ctx.URLParam("type") {
+				case "favimg":
+					tk := respone_content["token"]
+					img := respone_content["img"]
+					if tk == nil || img == nil {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token or img is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					t, err := SCDecryptString(tk.(string), se_key, "aes")
+					if err != nil {
+						fmt.Println(err)
+					}
+					r, _ := base64.StdEncoding.DecodeString(t)
+					uid := strings.Split(string(r), "@")[0]
+					id, err := strconv.Atoi(uid)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if _, ok := globalTokenMap[id]; ok {
+						for e := globalTokenMap[id].Front(); e != nil; e = e.Next() {
+							if e.Value.(map[string]string)["token"] == tk {
+								_, err := db.Exec("UPDATE hty_user SET `favimg`=? WHERE `id` = ?", img.(string), id)
+								if err != nil {
+									fmt.Println(err)
+								}
+								var d map[string]interface{} = make(map[string]interface{})
+								d["status"] = "success"
+								var m *map[string]interface{} = makeResponse(200, d)
+								m_b, err := json.Marshal(m)
+								if err != nil {
+									fmt.Println(err)
+								}
+								ctx.Text(string(m_b))
+								return
+							}
+						}
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token is invalid"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					} else {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token is invalid"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+				case "nickname":
+				case "gender":
+				case "description":
+				case "pwd":
+				default:
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "type is invalid"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				}
+			})
+		}
 	}
 	/* --- */
 
@@ -472,7 +562,7 @@ func main() {
 /* Private */
 func createTables(db *sql.DB) {
 	//Create User Table
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) UNIQUE NOT NULL, `nickname` VARCHAR (20) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) UNIQUE NOT NULL, `nickname` VARCHAR (20) NOT NULL, `gender` INT NOT NULL, `description` TEXT NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
 	if err != nil {
 		fmt.Println(err)
 	}

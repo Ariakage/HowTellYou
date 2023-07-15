@@ -6,6 +6,8 @@ IF
 		`favimg` TEXT NOT NULL,
 		`name` VARCHAR ( 16 ) UNIQUE NOT NULL,
 		`nickname` VARCHAR ( 20 ) NOT NULL,
+		`gender` INT NOT NULL,
+		`description` TEXT NOT NULL,
 		`email` VARCHAR ( 50 ) NOT NULL,
 		`pwd` VARCHAR ( 512 ) NOT NULL,
 	`create_time` DATETIME DEFAULT CURRENT_TIMESTAMP 
