@@ -229,7 +229,7 @@ func main() {
 					fmt.Println(err)
 				}
 				if ct_dbd == 0 {
-					_, err := db.Exec("INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `gender`, `description`, `email`, `pwd`) VALUES (?, ?, ?, ?, ?)", "", name.(string), name.(string), -1, "", email.(string), GetSHA256HashCode([]byte(pwd.(string))))
+					_, err := db.Exec("INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `gender`, `description`, `email`, `pwd`) VALUES (?, ?, ?, ?, ?, ?, ?)", "", name.(string), name.(string), -1, "", email.(string), GetSHA256HashCode([]byte(pwd.(string))))
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -417,27 +417,41 @@ func main() {
 					for e := globalFindAccountCodeMap[code.(string)].Front(); e != nil; e = e.Next() {
 						if e.Value.(map[string]string)["token"] == tk {
 							globalFindAccountCodeMap[code.(string)].Remove(e)
-
 							t, err := SCDecryptString(e.Value.(map[string]string)["token"], se_key, "aes")
 							if err != nil {
 								fmt.Println(err)
 							}
 							r, _ := base64.StdEncoding.DecodeString(t)
-							uid := strings.Split(string(r), "@")[0]
-							pwds := GetSHA256HashCode([]byte(pwd.(string)))
-							_, err = db.Exec("UPDATE hty_user SET `pwd`=? WHERE `id` = ?", pwds, uid)
-							if err != nil {
-								fmt.Println(err)
-							}
+							t1, _ := time.Parse(strings.Split(strings.Split(string(r), "@")[1], "$")[0], strings.Split(strings.Split(string(r), "@")[1], "$")[0])
+							t2 := time.Now()
+							rt := t1.Sub(t2)
+							if rt.Minutes() <= 10 {
+								uid := strings.Split(string(r), "@")[0]
+								pwds := GetSHA256HashCode([]byte(pwd.(string)))
+								_, err = db.Exec("UPDATE hty_user SET `pwd`=? WHERE `id` = ?", pwds, uid)
+								if err != nil {
+									fmt.Println(err)
+								}
 
-							var d map[string]interface{} = make(map[string]interface{})
-							d["status"] = "success"
-							var m *map[string]interface{} = makeResponse(200, d)
-							m_b, err := json.Marshal(m)
-							if err != nil {
-								fmt.Println(err)
+								var d map[string]interface{} = make(map[string]interface{})
+								d["status"] = "success"
+								var m *map[string]interface{} = makeResponse(200, d)
+								m_b, err := json.Marshal(m)
+								if err != nil {
+									fmt.Println(err)
+								}
+								ctx.Text(string(m_b))
+							} else {
+								var d map[string]interface{} = make(map[string]interface{})
+								d["status"] = "failed"
+								d["reason"] = "code timeout"
+								var m *map[string]interface{} = makeResponse(0, d)
+								m_b, err := json.Marshal(m)
+								if err != nil {
+									fmt.Println(err)
+								}
+								ctx.Text(string(m_b))
 							}
-							ctx.Text(string(m_b))
 							return
 						}
 					}
@@ -537,6 +551,70 @@ func main() {
 						return
 					}
 				case "nickname":
+					tk := respone_content["token"]
+					nickname := respone_content["nickname"]
+					if tk == nil || nickname == nil {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token or nickname is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					t, err := SCDecryptString(tk.(string), se_key, "aes")
+					if err != nil {
+						fmt.Println(err)
+					}
+					r, _ := base64.StdEncoding.DecodeString(t)
+					uid := strings.Split(string(r), "@")[0]
+					id, err := strconv.Atoi(uid)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if _, ok := globalTokenMap[id]; ok {
+						for e := globalTokenMap[id].Front(); e != nil; e = e.Next() {
+							if e.Value.(map[string]string)["token"] == tk {
+								_, err := db.Exec("UPDATE hty_user SET `nickname`=? WHERE `id` = ?", nickname.(string), id)
+								if err != nil {
+									fmt.Println(err)
+								}
+								var d map[string]interface{} = make(map[string]interface{})
+								d["status"] = "success"
+								var m *map[string]interface{} = makeResponse(200, d)
+								m_b, err := json.Marshal(m)
+								if err != nil {
+									fmt.Println(err)
+								}
+								ctx.Text(string(m_b))
+								return
+							}
+						}
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token is invalid"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					} else {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token is invalid"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
 				case "gender":
 				case "description":
 				case "pwd":
