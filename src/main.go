@@ -6,11 +6,13 @@ package main
 import (
 	"container/list"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -22,6 +24,7 @@ import (
 
 var configFilePath = flag.String("cfgp", "./config.toml", "Config File Path")
 var globalTokenMap map[int]*list.List = make(map[int]*list.List)
+var globalFindAccountCodeMap map[string]*list.List = make(map[string]*list.List)
 
 func main() {
 	flag.Parse()
@@ -48,6 +51,12 @@ func main() {
 	se_chars := config.Get("secure.allowed_chars").(string)
 	se_saltlength := int(config.Get("secure.salt_length").(int64))
 	se_key := config.Get("secure.key").(string)
+
+	ml_saddr := config.Get("mail.send_addr").(string)
+	ml_sv := config.Get("mail.server").(string)
+	ml_port := int(config.Get("mail.port").(int64))
+	ml_ac := config.Get("mail.authcode").(string)
+	ml_findaccount_html := config.Get("mail.find_account_html").(string)
 
 	if sv_port > 65536 || sv_port < 0 {
 		fmt.Println("HTY Startup error - port parameter >65536 or <0")
@@ -213,19 +222,36 @@ func main() {
 					ctx.Text(string(m_b))
 					return
 				}
-				res, err := db.Exec("INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `email`, `pwd`) VALUES (?, ?, ?, ?, ?)", "", name.(string), name.(string), email.(string), GetSHA256HashCode([]byte(pwd.(string))))
+				row := db.QueryRow("SELECT COUNT(*) FROM hty_user WHERE `name` = ?", name.(string))
+				var ct_dbd int
+				err := row.Scan(&ct_dbd)
 				if err != nil {
 					fmt.Println(err)
 				}
-				_ = res
-				var d map[string]interface{} = make(map[string]interface{})
-				d["status"] = "success"
-				var m *map[string]interface{} = makeResponse(0, d)
-				m_b, err := json.Marshal(m)
-				if err != nil {
-					fmt.Println(err)
+				if ct_dbd == 0 {
+					_, err := db.Exec("INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `email`, `pwd`) VALUES (?, ?, ?, ?, ?)", "", name.(string), name.(string), email.(string), GetSHA256HashCode([]byte(pwd.(string))))
+					if err != nil {
+						fmt.Println(err)
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "success"
+					var m *map[string]interface{} = makeResponse(200, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				} else {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "name already exists"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
 				}
-				ctx.Text(string(m_b))
 			})
 		}
 		//Logout
@@ -299,7 +325,142 @@ func main() {
 				ctx.Text("Get request is not supported")
 			})
 			user_prtAPI.Post("/find_account", func(ctx iris.Context) {
-				ctx.Text("find-account - post")
+				respone_content := *(GetRequestParams(ctx).(*map[string]interface{}))
+				email := respone_content["email"]
+				name := respone_content["name"]
+				if email == nil || name == nil {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "Name, or Email is null"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+					return
+				}
+				row := db.QueryRow("SELECT COUNT(*) FROM hty_user WHERE `name` = ? AND `email` = ?", name.(string), email.(string))
+				var ct_dbd int
+				err := row.Scan(&ct_dbd)
+				if err != nil {
+					fmt.Println(err)
+				}
+				if ct_dbd == 0 {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "user not found"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				} else {
+					code := strconv.Itoa(GenerateRealRand(9)) + strconv.Itoa(GenerateRealRand(9)) + strconv.Itoa(GenerateRealRand(9)) +
+						strconv.Itoa(GenerateRealRand(9)) + strconv.Itoa(GenerateRealRand(9)) + strconv.Itoa(GenerateRealRand(9))
+					hl := strings.Replace(strings.Replace(ml_findaccount_html, "$CODE", code, -1), "$TIME", time.Now().String(), -1)
+					SendEmail(ml_saddr, email.(string), ml_sv, ml_port, ml_ac, hl)
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "success"
+					row = db.QueryRow("SELECT `id` FROM hty_user WHERE `name` = ? AND `email` = ?", name.(string), email.(string))
+					var id_dbd int
+					err := row.Scan(&id_dbd)
+					if err != nil {
+						fmt.Println(err)
+					}
+					tk, slt := GenerateFindAccountToken(se_chars, se_saltlength, se_key, id_dbd, code, time.Now())
+					d["token"] = tk
+					var m *map[string]interface{} = makeResponse(200, d)
+					m_b, err := json.Marshal(m)
+					if _, ok := globalFindAccountCodeMap[code]; ok {
+						var mp map[string]string = make(map[string]string)
+						mp["token"] = tk
+						mp["salt"] = slt
+						globalFindAccountCodeMap[code].PushBack(mp)
+					} else {
+						globalFindAccountCodeMap[code] = list.New()
+						var mp map[string]string = make(map[string]string)
+						mp["token"] = tk
+						mp["salt"] = slt
+						globalFindAccountCodeMap[code].PushBack(mp)
+					}
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				}
+				//SendEmail(ml_saddr, "2026159790@qq.com", ml_sv, ml_port, ml_ac, ml_findaccount_html)
+			})
+
+			user_prtAPI.Get("/find_account_code", func(ctx iris.Context) {
+				ctx.Text("Get request is not supported")
+			})
+			user_prtAPI.Post("/find_account_code", func(ctx iris.Context) {
+				respone_content := *(GetRequestParams(ctx).(*map[string]interface{}))
+				pwd := respone_content["pwd"]
+				code := respone_content["code"]
+				tk := respone_content["token"]
+				if code == nil || tk == nil || pwd == nil {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "code, pwd or token is null"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+					return
+				}
+				if _, ok := globalFindAccountCodeMap[code.(string)]; ok {
+					for e := globalFindAccountCodeMap[code.(string)].Front(); e != nil; e = e.Next() {
+						if e.Value.(map[string]string)["token"] == tk {
+							globalFindAccountCodeMap[code.(string)].Remove(e)
+
+							t, err := SCDecryptString(e.Value.(map[string]string)["token"], se_key, "aes")
+							if err != nil {
+								fmt.Println(err)
+							}
+							r, _ := base64.StdEncoding.DecodeString(t)
+							uid := strings.Split(string(r), "@")[0]
+							pwds := GetSHA256HashCode([]byte(pwd.(string)))
+							_, err = db.Exec("UPDATE hty_user SET `pwd`=? WHERE `id` = ?", pwds, uid)
+							if err != nil {
+								fmt.Println(err)
+							}
+
+							var d map[string]interface{} = make(map[string]interface{})
+							d["status"] = "success"
+							var m *map[string]interface{} = makeResponse(200, d)
+							m_b, err := json.Marshal(m)
+							if err != nil {
+								fmt.Println(err)
+							}
+							ctx.Text(string(m_b))
+							return
+						}
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "token is invalid"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				} else {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "code is invalid"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				}
 			})
 		}
 	}
@@ -311,7 +472,7 @@ func main() {
 /* Private */
 func createTables(db *sql.DB) {
 	//Create User Table
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) NOT NULL, `nickname` VARCHAR (20) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS hty_user ( `id` INT PRIMARY KEY AUTO_INCREMENT, `favimg` TEXT NOT NULL, `name` VARCHAR(16) UNIQUE NOT NULL, `nickname` VARCHAR (20) NOT NULL, `email` VARCHAR(50) NOT NULL, `pwd` VARCHAR(512) NOT NULL, `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP );")
 	if err != nil {
 		fmt.Println(err)
 	}

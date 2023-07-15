@@ -4,7 +4,7 @@ IF
 	NOT EXISTS hty_user (
 		`id` INT PRIMARY KEY AUTO_INCREMENT,
 		`favimg` TEXT NOT NULL,
-		`name` VARCHAR ( 16 ) NOT NULL,
+		`name` VARCHAR ( 16 ) UNIQUE NOT NULL,
 		`nickname` VARCHAR ( 20 ) NOT NULL,
 		`email` VARCHAR ( 50 ) NOT NULL,
 		`pwd` VARCHAR ( 512 ) NOT NULL,
@@ -50,5 +50,5 @@ IF
 INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `email`, `pwd`) VALUES ('', 'test_user1', 'test_user1','abcd@test.com', '114514')
 -- Select User pwd
 SELECT `pwd` FROM hty_user WHERE `id` = 11 or `email` = 'abcd@test.com'
-
+UPDATE hty_user SET `pwd`='' WHERE `id` = ''
 -- End User
