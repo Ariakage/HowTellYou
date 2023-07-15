@@ -51,6 +51,7 @@ func main() {
 	se_chars := config.Get("secure.allowed_chars").(string)
 	se_saltlength := int(config.Get("secure.salt_length").(int64))
 	se_key := config.Get("secure.key").(string)
+	se_vc_tom := int(config.Get("secure.verifcode_timeout").(int64))
 
 	ml_saddr := config.Get("mail.send_addr").(string)
 	ml_sv := config.Get("mail.server").(string)
