@@ -5,6 +5,7 @@ IF
 		`id` INT PRIMARY KEY AUTO_INCREMENT,
 		`favimg` TEXT NOT NULL,
 		`name` VARCHAR ( 16 ) NOT NULL,
+		`nickname` VARCHAR ( 20 ) NOT NULL,
 		`email` VARCHAR ( 50 ) NOT NULL,
 		`pwd` VARCHAR ( 512 ) NOT NULL,
 	`create_time` DATETIME DEFAULT CURRENT_TIMESTAMP 
@@ -46,7 +47,7 @@ IF
 -- User
 
 -- Add User
-INSERT INTO hty_user(`favimg` ,`name`, `email`, `pwd`) VALUES ('', 'test_user1', 'abcd@test.com', '114514')
+INSERT INTO hty_user(`favimg` ,`name`, `nickname`, `email`, `pwd`) VALUES ('', 'test_user1', 'test_user1','abcd@test.com', '114514')
 -- Select User pwd
 SELECT `pwd` FROM hty_user WHERE `id` = 11 or `email` = 'abcd@test.com'
 
