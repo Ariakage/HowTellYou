@@ -889,7 +889,7 @@ func main() {
 				var dx map[string]interface{} = make(map[string]interface{})
 				dx["status"] = "success"
 				dx["data"] = d
-				var m *map[string]interface{} = makeResponse(200, d)
+				var m *map[string]interface{} = makeResponse(200, dx)
 				m_b, err := json.Marshal(m)
 				if err != nil {
 					fmt.Println(err)
