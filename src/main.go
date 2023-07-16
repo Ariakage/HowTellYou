@@ -46,6 +46,7 @@ func main() {
 		Addr:                 db_ip + ":" + strconv.Itoa(db_port),
 		DBName:               db_dbname,
 		AllowNativePasswords: true,
+		ParseTime:            true,
 	}
 
 	se_chars := config.Get("secure.allowed_chars").(string)
