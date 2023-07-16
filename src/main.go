@@ -900,7 +900,20 @@ func main() {
 				ctx.Text("Post request is not supported")
 			})
 		}
+		//Search User
+		{
+			user_prtAPI.Get("/search", func(ctx iris.Context) {
+				ctx.Text("Get request is not supported")
+			})
+			user_prtAPI.Post("/search", func(ctx iris.Context) {})
+		}
 	}
+	/* --- */
+	/* Group Part */
+	/* --- */
+	/* Message Part */
+	/* --- */
+	/* Other Part */
 	/* --- */
 
 	app.Run(iris.Addr(":"+strconv.Itoa(sv_port)), iris.WithConfiguration(iris.TOML(sv_cfgp)))
