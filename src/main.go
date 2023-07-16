@@ -759,6 +759,71 @@ func main() {
 						return
 					}
 				case "pwd":
+					tk := respone_content["token"]
+					pwd := respone_content["pwd"]
+					if tk == nil || pwd == nil {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token or pwd is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					t, err := SCDecryptString(tk.(string), se_key, "aes")
+					if err != nil {
+						fmt.Println(err)
+					}
+					r, _ := base64.StdEncoding.DecodeString(t)
+					uid := strings.Split(string(r), "@")[0]
+					id, err := strconv.Atoi(uid)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if _, ok := globalTokenMap[id]; ok {
+						for e := globalTokenMap[id].Front(); e != nil; e = e.Next() {
+							if e.Value.(map[string]string)["token"] == tk {
+								delete(globalTokenMap, id)
+								_, err := db.Exec("UPDATE hty_user SET `pwd`=? WHERE `id` = ?", GetSHA256HashCode([]byte(pwd.(string))), id)
+								if err != nil {
+									fmt.Println(err)
+								}
+								var d map[string]interface{} = make(map[string]interface{})
+								d["status"] = "success"
+								var m *map[string]interface{} = makeResponse(200, d)
+								m_b, err := json.Marshal(m)
+								if err != nil {
+									fmt.Println(err)
+								}
+								ctx.Text(string(m_b))
+								return
+							}
+						}
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token is invalid"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					} else {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "token is invalid"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
 				default:
 					var d map[string]interface{} = make(map[string]interface{})
 					d["status"] = "failed"
