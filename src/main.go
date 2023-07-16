@@ -837,6 +837,68 @@ func main() {
 				}
 			})
 		}
+		//Query User Info
+		{
+			user_prtAPI.Get("/query", func(ctx iris.Context) {
+				id := ctx.URLParam("id")
+				name := ctx.URLParam("name")
+				if id == "" && name == "" {
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "id and name is null"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+					return
+				}
+				var d map[string]interface{} = make(map[string]interface{})
+				var row *sql.Row
+				if id == "" && name != "" {
+					row = db.QueryRow("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `name` = ?", name)
+				} else if id != "" && name == "" {
+					row = db.QueryRow("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `id` = ?", id)
+				} else {
+					row = db.QueryRow("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `name` = ? AND `id` = ?", name, id)
+				}
+				var (
+					id_          int
+					favimg_      string
+					name_        string
+					nickname_    string
+					gender_      int
+					description_ string
+					email_       string
+					create_time_ time.Time
+				)
+				err := row.Scan(&id_, &favimg_, &name_, &nickname_, &gender_, &description_, &email_, &create_time_)
+				if err != nil {
+					fmt.Println(err)
+				}
+				d["id"] = id_
+				d["favimg"] = favimg_
+				d["name"] = name_
+				d["nickname"] = nickname_
+				d["gender"] = gender_
+				d["description"] = description_
+				d["email"] = email_
+				d["create_time"] = create_time_
+				var dx map[string]interface{} = make(map[string]interface{})
+				dx["status"] = "success"
+				dx["data"] = d
+				var m *map[string]interface{} = makeResponse(200, d)
+				m_b, err := json.Marshal(m)
+				if err != nil {
+					fmt.Println(err)
+				}
+				ctx.Text(string(m_b))
+			})
+			user_prtAPI.Post("/query", func(ctx iris.Context) {
+				ctx.Text("Post request is not supported")
+			})
+		}
 	}
 	/* --- */
 
