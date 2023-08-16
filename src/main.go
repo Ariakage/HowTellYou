@@ -950,6 +950,7 @@ func main() {
 						mp["email"] = email_
 						mp["create_time"] = create_time_
 						lst.PushBack(mp)
+						fmt.Println(lst)
 						if err != nil {
 							fmt.Println(err)
 						}
@@ -959,8 +960,12 @@ func main() {
 						fmt.Println(err)
 					}
 					rows.Close()
+					arr := make([]interface{}, 0)
+					for i := lst.Front(); i != nil; i = i.Next() {
+						arr = append(arr, i.Value)
+					}
 					d["status"] = "success"
-					d["data"] = lst
+					d["data"] = arr
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
@@ -1018,8 +1023,12 @@ func main() {
 						fmt.Println(err)
 					}
 					rows.Close()
+					arr := make([]interface{}, 0)
+					for i := lst.Front(); i != nil; i = i.Next() {
+						arr = append(arr, i.Value)
+					}
 					d["status"] = "success"
-					d["data"] = lst
+					d["data"] = arr
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
@@ -1077,8 +1086,12 @@ func main() {
 						fmt.Println(err)
 					}
 					rows.Close()
+					arr := make([]interface{}, 0)
+					for i := lst.Front(); i != nil; i = i.Next() {
+						arr = append(arr, i.Value)
+					}
 					d["status"] = "success"
-					d["data"] = lst
+					d["data"] = arr
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
@@ -1136,8 +1149,12 @@ func main() {
 						fmt.Println(err)
 					}
 					rows.Close()
+					arr := make([]interface{}, 0)
+					for i := lst.Front(); i != nil; i = i.Next() {
+						arr = append(arr, i.Value)
+					}
 					d["status"] = "success"
-					d["data"] = lst
+					d["data"] = arr
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
@@ -1195,8 +1212,12 @@ func main() {
 						fmt.Println(err)
 					}
 					rows.Close()
+					arr := make([]interface{}, 0)
+					for i := lst.Front(); i != nil; i = i.Next() {
+						arr = append(arr, i.Value)
+					}
 					d["status"] = "success"
-					d["data"] = lst
+					d["data"] = arr
 					var m *map[string]interface{} = makeResponse(0, d)
 					m_b, err := json.Marshal(m)
 					if err != nil {
