@@ -905,7 +905,328 @@ func main() {
 			user_prtAPI.Get("/search", func(ctx iris.Context) {
 				ctx.Text("Get request is not supported")
 			})
-			user_prtAPI.Post("/search", func(ctx iris.Context) {})
+			user_prtAPI.Post("/search", func(ctx iris.Context) {
+				respone_content := *(GetRequestParams(ctx).(*map[string]interface{}))
+				switch ctx.URLParam("type") {
+				case "id":
+					id := respone_content["id"]
+					if id == "" {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "id is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					rows, err := db.Query("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `id` = ?", id)
+					if err != nil {
+						fmt.Println(err)
+					}
+					lst := list.New()
+					for rows.Next() {
+						var (
+							id_          int
+							favimg_      string
+							name_        string
+							nickname_    string
+							gender_      int
+							description_ string
+							email_       string
+							create_time_ time.Time
+						)
+						err := rows.Scan(&id_, &favimg_, &name_, &nickname_, &gender_, &description_, &email_, &create_time_)
+						var mp map[string]interface{} = make(map[string]interface{})
+						mp["id"] = id_
+						mp["favimg"] = favimg_
+						mp["name"] = name_
+						mp["nickname"] = nickname_
+						mp["gender"] = gender_
+						mp["description"] = description_
+						mp["email"] = email_
+						mp["create_time"] = create_time_
+						lst.PushBack(mp)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+					err = rows.Err()
+					if err != nil {
+						fmt.Println(err)
+					}
+					rows.Close()
+					d["status"] = "success"
+					d["data"] = lst
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				case "name":
+					name := respone_content["name"]
+					if name == "" {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "name is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					rows, err := db.Query("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `name` = ?", name)
+					if err != nil {
+						fmt.Println(err)
+					}
+					lst := list.New()
+					for rows.Next() {
+						var (
+							id_          int
+							favimg_      string
+							name_        string
+							nickname_    string
+							gender_      int
+							description_ string
+							email_       string
+							create_time_ time.Time
+						)
+						err := rows.Scan(&id_, &favimg_, &name_, &nickname_, &gender_, &description_, &email_, &create_time_)
+						var mp map[string]interface{} = make(map[string]interface{})
+						mp["id"] = id_
+						mp["favimg"] = favimg_
+						mp["name"] = name_
+						mp["nickname"] = nickname_
+						mp["gender"] = gender_
+						mp["description"] = description_
+						mp["email"] = email_
+						mp["create_time"] = create_time_
+						lst.PushBack(mp)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+					err = rows.Err()
+					if err != nil {
+						fmt.Println(err)
+					}
+					rows.Close()
+					d["status"] = "success"
+					d["data"] = lst
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				case "nickname":
+					nickname := respone_content["nickname"]
+					if nickname == "" {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "nickname is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					rows, err := db.Query("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `nickname` = ?", nickname)
+					if err != nil {
+						fmt.Println(err)
+					}
+					lst := list.New()
+					for rows.Next() {
+						var (
+							id_          int
+							favimg_      string
+							name_        string
+							nickname_    string
+							gender_      int
+							description_ string
+							email_       string
+							create_time_ time.Time
+						)
+						err := rows.Scan(&id_, &favimg_, &name_, &nickname_, &gender_, &description_, &email_, &create_time_)
+						var mp map[string]interface{} = make(map[string]interface{})
+						mp["id"] = id_
+						mp["favimg"] = favimg_
+						mp["name"] = name_
+						mp["nickname"] = nickname_
+						mp["gender"] = gender_
+						mp["description"] = description_
+						mp["email"] = email_
+						mp["create_time"] = create_time_
+						lst.PushBack(mp)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+					err = rows.Err()
+					if err != nil {
+						fmt.Println(err)
+					}
+					rows.Close()
+					d["status"] = "success"
+					d["data"] = lst
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				case "gender":
+					gender := respone_content["gender"]
+					if gender == "" {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "gender is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					rows, err := db.Query("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `id` = ?", gender)
+					if err != nil {
+						fmt.Println(err)
+					}
+					lst := list.New()
+					for rows.Next() {
+						var (
+							id_          int
+							favimg_      string
+							name_        string
+							nickname_    string
+							gender_      int
+							description_ string
+							email_       string
+							create_time_ time.Time
+						)
+						err := rows.Scan(&id_, &favimg_, &name_, &nickname_, &gender_, &description_, &email_, &create_time_)
+						var mp map[string]interface{} = make(map[string]interface{})
+						mp["id"] = id_
+						mp["favimg"] = favimg_
+						mp["name"] = name_
+						mp["nickname"] = nickname_
+						mp["gender"] = gender_
+						mp["description"] = description_
+						mp["email"] = email_
+						mp["create_time"] = create_time_
+						lst.PushBack(mp)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+					err = rows.Err()
+					if err != nil {
+						fmt.Println(err)
+					}
+					rows.Close()
+					d["status"] = "success"
+					d["data"] = lst
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				case "email":
+					email := respone_content["email"]
+					if email == "" {
+						var d map[string]interface{} = make(map[string]interface{})
+						d["status"] = "failed"
+						d["reason"] = "email is null"
+						var m *map[string]interface{} = makeResponse(0, d)
+						m_b, err := json.Marshal(m)
+						if err != nil {
+							fmt.Println(err)
+						}
+						ctx.Text(string(m_b))
+						return
+					}
+					var d map[string]interface{} = make(map[string]interface{})
+					rows, err := db.Query("SELECT `id`, `favimg`, `name`, `nickname`, `gender`, `description`, `email`, `create_time` FROM hty_user WHERE `email` = ?", email)
+					if err != nil {
+						fmt.Println(err)
+					}
+					lst := list.New()
+					for rows.Next() {
+						var (
+							id_          int
+							favimg_      string
+							name_        string
+							nickname_    string
+							gender_      int
+							description_ string
+							email_       string
+							create_time_ time.Time
+						)
+						err := rows.Scan(&id_, &favimg_, &name_, &nickname_, &gender_, &description_, &email_, &create_time_)
+						var mp map[string]interface{} = make(map[string]interface{})
+						mp["id"] = id_
+						mp["favimg"] = favimg_
+						mp["name"] = name_
+						mp["nickname"] = nickname_
+						mp["gender"] = gender_
+						mp["description"] = description_
+						mp["email"] = email_
+						mp["create_time"] = create_time_
+						lst.PushBack(mp)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+					err = rows.Err()
+					if err != nil {
+						fmt.Println(err)
+					}
+					rows.Close()
+					d["status"] = "success"
+					d["data"] = lst
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				case "description":
+					description := respone_content["description"]
+					_ = description
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "this function can't work because it is didnt be done"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				default:
+					var d map[string]interface{} = make(map[string]interface{})
+					d["status"] = "failed"
+					d["reason"] = "type is invalid"
+					var m *map[string]interface{} = makeResponse(0, d)
+					m_b, err := json.Marshal(m)
+					if err != nil {
+						fmt.Println(err)
+					}
+					ctx.Text(string(m_b))
+				}
+			})
 		}
 	}
 	/* --- */
