@@ -1,0 +1,99 @@
+[global]
+    name = "HowTellYou"
+[server]
+    port = 8888
+    config_path = "./config_iris.toml"
+[database]
+    ip = "192.168.21.131"
+    port = 3306
+    user = "root"
+    password = "qwerty123456"
+    database_name = "hty"
+[secure]
+    key = "W*qw#yL5AChsiBiN" # must be 16, 24, 32 length
+    allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#$%^&*()-_=+[]{}\\|?><.,/1234567890"
+    salt_length = 64
+    verifcode_timeout = 10 #minutes
+[mail]
+    send_addr = ""
+    authcode = ""
+    server = ""
+    port = 25
+    find_account_html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style>
+            *{
+                margin: 0;
+                padding: 0;
+            }
+            .top{
+                width: 100%;
+                height: 40px;
+                background: -webkit-linear-gradient(90deg, #4ce1af,#06ade5);/* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(90deg, #4ce1af,#06ade5);/* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                padding-top: 10px;                                   
+            }
+            .top span{
+                display: block;
+                color: #FFFFFF;
+                font-size: 20px;
+                font-weight: bold;
+                text-align: center;
+            }
+            .container span{
+                display: block;
+                font-size: 18px;
+            }
+            .container .name, .container .time{
+                position: absolute;
+                right: 30px;
+            }
+            .container .code{
+                display: block;
+                margin: auto auto;
+                text-align: center;
+                background: -webkit-linear-gradient(90deg, #4cd7e1,#1ebcf1);/* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(90deg, #4cd7e1,#1ebcf1);/* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */                                             
+                width: 130px;
+                height: 44px;
+                font-size: 25px;
+                font-weight: bold;
+                padding-top: 12px;
+                color: #FFFFFF;
+                border: #eeeeee 10px solid;
+                border-radius: 10px;
+            }
+        </style>
+        <script></script>
+    </head>
+    <body>
+        <div class="top">
+            <span>How Tell You —— Find Account</span>
+        </div>
+        <div class="container">
+            <span>Dear HTY user:</span>
+            <br>
+            <span>You are resetting the password for this account.</span>
+            <span>If this is your operation, you need to enter the verification code below.</span>
+            <br>
+            <div class="code">$CODE</div>
+            <br>
+            <span>If you have not reset this account, please save this verification code and do not disclose it, otherwise your account may be stolen</span>
+            <br>
+            <span class="name">By How Tell You Server</span>
+            <br><br>
+            <span class="time">$TIME</span>
+        </div>
+        <div class="bottom">
+            <a href="#">HELP</a>
+        </div>
+    </body>
+</html>
+    """#Do not use keywords "$CODE" and "$TIME"
+
+#Please do not make any arbitrary changes to the following content
+[advanced]
